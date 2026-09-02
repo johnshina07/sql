@@ -1,0 +1,180 @@
+DROP DATABASE IF EXISTS seller_inventory;
+
+CREATE DATABASE seller_inventory;
+
+USE seller_inventory;
+
+CREATE TABLE sellers (
+    seller_id INT PRIMARY KEY AUTO_INCREMENT,
+    seller_name VARCHAR(100) NOT NULL,
+    email VARCHAR(100) UNIQUE,
+    phone VARCHAR(15),
+    address VARCHAR(200)
+);
+
+CREATE TABLE products (
+    product_id INT PRIMARY KEY AUTO_INCREMENT,
+    product_name VARCHAR(100) NOT NULL,
+    category VARCHAR(50),
+    price DECIMAL(10,2) NOT NULL
+);
+
+CREATE TABLE inventory (
+    inventory_id INT PRIMARY KEY AUTO_INCREMENT,
+    seller_id INT NOT NULL,
+    product_id INT NOT NULL,
+    stock_quantity INT DEFAULT 0,
+    status VARCHAR(20) DEFAULT 'Unavailable',
+    FOREIGN KEY (seller_id) REFERENCES sellers(seller_id),
+    FOREIGN KEY (product_id) REFERENCES products(product_id)
+);
+
+INSERT INTO sellers (seller_name, email, phone, address)
+VALUES
+('ABC Electronics', 'abc@gmail.com', '9876543210', 'Chennai'),
+('Tech World', 'techworld@gmail.com', '9876543211', 'Bangalore'),
+('Smart Store', 'smartstore@gmail.com', '9876543212', 'Coimbatore'),
+('Digital Hub', 'digitalhub@gmail.com', '9876543213', 'Madurai');
+
+INSERT INTO products (product_name, category, price)
+VALUES
+('Laptop', 'Electronics', 55000.00),
+('Smartphone', 'Electronics', 25000.00),
+('Headphones', 'Accessories', 2500.00),
+('Keyboard', 'Accessories', 1200.00),
+('Mouse', 'Accessories', 800.00),
+('Smart Watch', 'Wearable', 5000.00),
+('Tablet', 'Electronics', 18000.00);
+
+INSERT INTO inventory (seller_id, product_id, stock_quantity, status)
+VALUES
+(1, 1, 10, 'Available'),
+(1, 3, 25, 'Available'),
+(1, 5, 30, 'Available'),
+(2, 2, 0, 'Unavailable'),
+(2, 4, 15, 'Available'),
+(2, 6, 12, 'Available'),
+(3, 5, 0, 'Unavailable'),
+(3, 7, 8, 'Available'),
+(4, 1, 5, 'Available'),
+(4, 2, 0, 'Unavailable');
+
+SELECT * FROM sellers;
+
+SELECT * FROM products;
+
+SELECT * FROM inventory;
+
+SELECT
+    s.seller_id,
+    s.seller_name,
+    p.product_id,
+    p.product_name,
+    p.category,
+    p.price,
+    i.stock_quantity,
+    i.status
+FROM sellers s
+JOIN inventory i
+ON s.seller_id = i.seller_id
+JOIN products p
+ON i.product_id = p.product_id;
+
+SELECT
+    s.seller_name,
+    p.product_name,
+    p.category,
+    p.price,
+    i.stock_quantity,
+    i.status
+FROM sellers s
+JOIN inventory i
+ON s.seller_id = i.seller_id
+JOIN products p
+ON i.product_id = p.product_id
+WHERE i.stock_quantity > 0;
+
+SELECT
+    s.seller_name,
+    p.product_name,
+    p.category,
+    p.price,
+    i.stock_quantity,
+    i.status
+FROM sellers s
+JOIN inventory i
+ON s.seller_id = i.seller_id
+JOIN products p
+ON i.product_id = p.product_id
+WHERE i.stock_quantity = 0;
+
+UPDATE inventory
+SET stock_quantity = 20,
+    status = 'Available'
+WHERE inventory_id = 4;
+
+UPDATE inventory
+SET status = CASE
+    WHEN stock_quantity > 0 THEN 'Available'
+    ELSE 'Unavailable'
+END
+WHERE inventory_id > 0;
+
+SELECT
+    i.inventory_id,
+    s.seller_name,
+    p.product_name,
+    p.category,
+    p.price,
+    i.stock_quantity,
+    i.status
+FROM inventory i
+JOIN sellers s
+ON i.seller_id = s.seller_id
+JOIN products p
+ON i.product_id = p.product_id
+ORDER BY i.inventory_id;
+
+SELECT
+    s.seller_name,
+    SUM(i.stock_quantity) AS total_stock
+FROM sellers s
+JOIN inventory i
+ON s.seller_id = i.seller_id
+GROUP BY s.seller_id, s.seller_name;
+
+SELECT
+    status,
+    COUNT(*) AS product_count
+FROM inventory
+GROUP BY status;
+
+SELECT
+    s.seller_name,
+    p.product_name,
+    i.stock_quantity
+FROM sellers s
+JOIN inventory i
+ON s.seller_id = i.seller_id
+JOIN products p
+ON i.product_id = p.product_id
+WHERE i.stock_quantity > 0
+AND i.stock_quantity <= 10;
+
+SELECT
+    i.inventory_id AS Inventory_ID,
+    s.seller_name AS Seller_Name,
+    p.product_name AS Product_Name,
+    p.category AS Category,
+    p.price AS Price,
+    i.stock_quantity AS Stock_Quantity,
+    CASE
+        WHEN i.stock_quantity > 0 THEN 'Available'
+        ELSE 'Unavailable'
+    END AS Status
+FROM inventory i
+INNER JOIN sellers s
+ON i.seller_id = s.seller_id
+INNER JOIN products p
+ON i.product_id = p.product_id
+ORDER BY i.inventory_id;
