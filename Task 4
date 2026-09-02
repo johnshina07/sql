@@ -1,0 +1,182 @@
+DROP DATABASE IF EXISTS order_management;
+
+CREATE DATABASE order_management;
+
+USE order_management;
+
+CREATE TABLE customers (
+    customer_id INT PRIMARY KEY AUTO_INCREMENT,
+    customer_name VARCHAR(100) NOT NULL,
+    email VARCHAR(100) UNIQUE,
+    phone VARCHAR(15),
+    address VARCHAR(200)
+);
+
+CREATE TABLE products (
+    product_id INT PRIMARY KEY AUTO_INCREMENT,
+    product_name VARCHAR(100) NOT NULL,
+    price DECIMAL(10,2) NOT NULL,
+    stock INT DEFAULT 0
+);
+
+CREATE TABLE orders (
+    order_id INT PRIMARY KEY AUTO_INCREMENT,
+    customer_id INT NOT NULL,
+    order_date DATE NOT NULL,
+    total_amount DECIMAL(10,2) DEFAULT 0.00,
+    FOREIGN KEY (customer_id) REFERENCES customers(customer_id)
+);
+
+CREATE TABLE order_details (
+    order_detail_id INT PRIMARY KEY AUTO_INCREMENT,
+    order_id INT NOT NULL,
+    product_id INT NOT NULL,
+    quantity INT NOT NULL,
+    unit_price DECIMAL(10,2) NOT NULL,
+    total_amount DECIMAL(10,2) NOT NULL,
+    FOREIGN KEY (order_id) REFERENCES orders(order_id),
+    FOREIGN KEY (product_id) REFERENCES products(product_id)
+);
+
+INSERT INTO customers (customer_name, email, phone, address)
+VALUES
+('John Kumar', 'john@gmail.com', '9876543210', 'Chennai'),
+('Rahul Sharma', 'rahul@gmail.com', '9876543211', 'Bangalore'),
+('Arun Kumar', 'arun@gmail.com', '9876543212', 'Coimbatore'),
+('David Raj', 'david@gmail.com', '9876543213', 'Madurai');
+
+INSERT INTO products (product_name, price, stock)
+VALUES
+('Laptop', 55000.00, 10),
+('Smartphone', 25000.00, 20),
+('Headphones', 2500.00, 30),
+('Keyboard', 1200.00, 25),
+('Mouse', 800.00, 40),
+('Smart Watch', 5000.00, 15);
+
+INSERT INTO orders (customer_id, order_date, total_amount)
+VALUES
+(1, '2026-09-01', 57500.00),
+(2, '2026-09-01', 25000.00),
+(3, '2026-09-02', 4100.00),
+(4, '2026-09-02', 5000.00);
+
+INSERT INTO order_details
+(order_id, product_id, quantity, unit_price, total_amount)
+VALUES
+(1, 1, 1, 55000.00, 55000.00),
+(1, 3, 1, 2500.00, 2500.00),
+(2, 2, 1, 25000.00, 25000.00),
+(3, 4, 1, 1200.00, 1200.00),
+(3, 5, 2, 800.00, 1600.00),
+(3, 3, 1, 1300.00, 1300.00),
+(4, 6, 1, 5000.00, 5000.00);
+
+SELECT * FROM customers;
+
+SELECT * FROM products;
+
+SELECT * FROM orders;
+
+SELECT * FROM order_details;
+
+INSERT INTO orders (customer_id, order_date, total_amount)
+VALUES
+(1, '2026-09-02', 800.00);
+
+INSERT INTO order_details
+(order_id, product_id, quantity, unit_price, total_amount)
+VALUES
+(5, 5, 1, 800.00, 800.00);
+
+UPDATE orders
+SET total_amount = 800.00
+WHERE order_id = 5;
+
+UPDATE order_details
+SET quantity = 2,
+    total_amount = 1600.00
+WHERE order_detail_id = 8;
+
+UPDATE orders
+SET total_amount = 1600.00
+WHERE order_id = 5;
+
+SELECT
+    o.order_id,
+    c.customer_name,
+    o.order_date,
+    o.total_amount
+FROM orders o
+JOIN customers c
+ON o.customer_id = c.customer_id
+ORDER BY o.order_date;
+
+SELECT
+    o.order_id,
+    c.customer_name,
+    p.product_name,
+    od.quantity,
+    od.unit_price,
+    od.total_amount
+FROM orders o
+JOIN customers c
+ON o.customer_id = c.customer_id
+JOIN order_details od
+ON o.order_id = od.order_id
+JOIN products p
+ON od.product_id = p.product_id
+ORDER BY o.order_id;
+
+SELECT
+    c.customer_id,
+    c.customer_name,
+    o.order_id,
+    o.order_date,
+    p.product_name,
+    od.quantity,
+    od.unit_price,
+    od.total_amount
+FROM customers c
+JOIN orders o
+ON c.customer_id = o.customer_id
+JOIN order_details od
+ON o.order_id = od.order_id
+JOIN products p
+ON od.product_id = p.product_id
+ORDER BY c.customer_id, o.order_date;
+
+SELECT
+    c.customer_id,
+    c.customer_name,
+    COUNT(o.order_id) AS total_orders,
+    SUM(o.total_amount) AS total_spent
+FROM customers c
+LEFT JOIN orders o
+ON c.customer_id = o.customer_id
+GROUP BY c.customer_id, c.customer_name
+ORDER BY c.customer_id;
+
+SELECT
+    c.customer_name,
+    o.order_id,
+    o.order_date,
+    o.total_amount
+FROM customers c
+JOIN orders o
+ON c.customer_id = o.customer_id
+WHERE c.customer_id = 1
+ORDER BY o.order_date;
+
+SELECT
+    o.order_id,
+    c.customer_name,
+    o.order_date,
+    SUM(od.total_amount) AS calculated_total
+FROM orders o
+JOIN customers c
+ON o.customer_id = c.customer_id
+JOIN order_details od
+ON o.order_id = od.order_id
+GROUP BY o.order_id, c.customer_name, o.order_date
+ORDER BY o.order_id;
