@@ -1,0 +1,125 @@
+DROP DATABASE IF EXISTS product_category;
+
+CREATE DATABASE product_category;
+
+USE product_category;
+
+CREATE TABLE category (
+    category_id INT PRIMARY KEY AUTO_INCREMENT,
+    category_name VARCHAR(100) NOT NULL UNIQUE,
+    description VARCHAR(255)
+);
+
+CREATE TABLE product (
+    product_id INT PRIMARY KEY AUTO_INCREMENT,
+    product_name VARCHAR(100) NOT NULL,
+    category_id INT NOT NULL,
+    price DECIMAL(10,2) NOT NULL,
+    stock INT DEFAULT 0,
+    FOREIGN KEY (category_id) REFERENCES category(category_id)
+);
+
+INSERT INTO category (category_name, description)
+VALUES
+('Electronics', 'Electronic devices and gadgets'),
+('Clothing', 'Clothes and fashion products'),
+('Books', 'Books and educational materials'),
+('Accessories', 'Computer and mobile accessories'),
+('Home Appliances', 'Appliances for home use');
+
+INSERT INTO product (product_name, category_id, price, stock)
+VALUES
+('Laptop', 1, 55000.00, 10),
+('Smartphone', 1, 25000.00, 15),
+('Television', 1, 45000.00, 8),
+('T-Shirt', 2, 799.00, 30),
+('Jeans', 2, 1499.00, 20),
+('Python Programming Book', 3, 650.00, 12),
+('Data Science Book', 3, 850.00, 10),
+('Wireless Mouse', 4, 800.00, 25),
+('Keyboard', 4, 1200.00, 18),
+('Refrigerator', 5, 35000.00, 5);
+
+SELECT * FROM category;
+
+SELECT * FROM product;
+
+INSERT INTO product (product_name, category_id, price, stock)
+VALUES ('Smart Watch', 1, 5000.00, 20);
+
+UPDATE product
+SET price = 5200.00,
+    stock = 25
+WHERE product_id = 11;
+
+DELETE FROM product
+WHERE product_id = 11;
+
+SELECT
+    p.product_id,
+    p.product_name,
+    c.category_name,
+    p.price,
+    p.stock
+FROM product p
+JOIN category c
+ON p.category_id = c.category_id
+ORDER BY c.category_name;
+
+SELECT
+    c.category_id,
+    c.category_name,
+    COUNT(p.product_id) AS total_products,
+    SUM(p.stock) AS total_stock,
+    AVG(p.price) AS average_price
+FROM category c
+LEFT JOIN product p
+ON c.category_id = p.category_id
+GROUP BY c.category_id, c.category_name
+ORDER BY c.category_name;
+
+SELECT
+    c.category_name,
+    p.product_name,
+    p.price,
+    p.stock
+FROM category c
+JOIN product p
+ON c.category_id = p.category_id
+ORDER BY c.category_name, p.product_name;
+
+SELECT
+    c.category_name,
+    COUNT(p.product_id) AS product_count
+FROM category c
+LEFT JOIN product p
+ON c.category_id = p.category_id
+GROUP BY c.category_id, c.category_name;
+
+SELECT
+    c.category_name,
+    SUM(p.stock) AS total_stock
+FROM category c
+JOIN product p
+ON c.category_id = p.category_id
+GROUP BY c.category_id, c.category_name;
+
+SELECT
+    c.category_name,
+    MAX(p.price) AS highest_price,
+    MIN(p.price) AS lowest_price
+FROM category c
+JOIN product p
+ON c.category_id = p.category_id
+GROUP BY c.category_id, c.category_name;
+
+SELECT
+    c.category_name,
+    p.product_name,
+    p.price,
+    p.stock
+FROM category c
+JOIN product p
+ON c.category_id = p.category_id
+WHERE p.stock > 0
+ORDER BY c.category_name;
