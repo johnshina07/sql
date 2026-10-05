@@ -198,8 +198,6 @@ ORDER BY o.order_id;
 | Complete order details | Customer + order + product + payment report |
 | Customer purchase history | Detailed purchase history query |
 | Multi-table reports | Customer summary, payment report and order-level report |
-```
-
 ## Execution
 
 Run Tasks I–V first so that the Customer, Product, Orders, Order_Details and Payment tables exist before executing Task VIII.
