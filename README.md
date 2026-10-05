@@ -10,10 +10,11 @@ MySQL 8.0+ implementation of Tasks I–VI. Each task is kept in a separate folde
 - [Task IV – Order Management](./Task-IV/README.md)
 - [Task V – Payment Transaction Management](./Task-V/README.md)
 - [Task VI – Product Review & Rating Management](./Task-VI/README.md)
+- [Task VIII – Database Relationship Analysis using Joins](./Task-VIII/README.md)
 
 ## Execution Order
 
-Run the tasks in order: **I → II → III → IV → V → VI** because later tasks use tables created by earlier tasks.
+Run the prerequisite tasks in order: **I → II → III → IV → V**, then execute **Task VIII** for database relationship analysis. Task VI can be executed independently after the Product and Customer tables are available.
 
 ### MySQL
 
