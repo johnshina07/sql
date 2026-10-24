@@ -1,19 +1,12 @@
-# Task VIII – Database Relationship Analysis using Joins
+-- TASK VIII: DATABASE RELATIONSHIP ANALYSIS USING JOINS
 
-## Objective
-
-Combine Customer, Product, Orders and Payment tables using SQL joins, retrieve complete order details, display customer purchase history and generate multi-table reports.
-
-## MySQL Code
-
-```sql
-USE ecommerce_db;
+-- If ecommerce_db already exists, select it in MySQL Workbench
+-- before running these queries.
 
 -- 1. INNER JOIN: Complete order details
--- Combines Customer, Orders, Order_Details, Product and Payment.
 SELECT
     c.customer_id,
-    c.customer_name,
+    c.name AS customer_name,
     o.order_id,
     o.order_date,
     o.status AS order_status,
@@ -41,11 +34,10 @@ INNER JOIN Payment pay
 ORDER BY o.order_id, od.order_detail_id, pay.payment_date DESC;
 
 
--- 2. LEFT JOIN: Show all customers, including customers
--- who have not placed an order.
+-- 2. LEFT JOIN: All customers, including those without orders
 SELECT
     c.customer_id,
-    c.customer_name,
+    c.name AS customer_name,
     o.order_id,
     o.order_date,
     o.status AS order_status,
@@ -67,8 +59,7 @@ LEFT JOIN Payment pay
 ORDER BY c.customer_id, o.order_date DESC;
 
 
--- 3. RIGHT JOIN: Show all products, including products
--- that have not been ordered.
+-- 3. RIGHT JOIN: All products, including products never ordered
 SELECT
     p.product_id,
     p.product_name,
@@ -77,7 +68,7 @@ SELECT
     od.quantity,
     od.subtotal,
     o.customer_id,
-    c.customer_name,
+    c.name AS customer_name,
     o.order_date
 FROM Order_Details od
 RIGHT JOIN Product p
@@ -92,7 +83,7 @@ ORDER BY p.product_id, o.order_date DESC;
 -- 4. Customer purchase history
 SELECT
     c.customer_id,
-    c.customer_name,
+    c.name AS customer_name,
     o.order_id,
     o.order_date,
     p.product_name,
@@ -114,7 +105,7 @@ ORDER BY c.customer_id, o.order_date DESC;
 -- 5. Customer-wise purchase summary
 SELECT
     c.customer_id,
-    c.customer_name,
+    c.name AS customer_name,
     COUNT(DISTINCT o.order_id) AS total_orders,
     COALESCE(SUM(od.quantity), 0) AS total_items,
     COALESCE(SUM(od.subtotal), 0.00) AS total_purchase_amount
@@ -123,20 +114,20 @@ LEFT JOIN Orders o
     ON c.customer_id = o.customer_id
 LEFT JOIN Order_Details od
     ON o.order_id = od.order_id
-GROUP BY c.customer_id, c.customer_name
+GROUP BY c.customer_id, c.name
 ORDER BY total_purchase_amount DESC;
 
 
 -- 6. Multi-table payment report
 SELECT
     pay.payment_id,
-    c.customer_name,
+    c.name AS customer_name,
     o.order_id,
     p.product_name,
     od.quantity,
     pay.payment_mode,
     pay.payment_date,
-    pay.amount,
+    pay.amount AS payment_amount,
     pay.status AS payment_status,
     o.status AS order_status
 FROM Payment pay
@@ -154,50 +145,30 @@ ORDER BY pay.payment_date DESC;
 -- 7. Order-level multi-table report
 SELECT
     o.order_id,
-    c.customer_name,
+    c.name AS customer_name,
     COUNT(DISTINCT od.order_detail_id) AS product_lines,
     SUM(od.quantity) AS total_quantity,
     o.total_amount AS order_total,
-    COALESCE(SUM(pay.amount), 0.00) AS total_paid,
-    MAX(pay.payment_status) AS latest_payment_status
+    COALESCE(payments.total_paid, 0.00) AS total_paid,
+    payments.latest_payment_status
 FROM Orders o
 INNER JOIN Customer c
     ON o.customer_id = c.customer_id
 INNER JOIN Order_Details od
     ON o.order_id = od.order_id
-LEFT JOIN Payment pay
-    ON o.order_id = pay.order_id
-GROUP BY o.order_id, c.customer_name, o.total_amount
+LEFT JOIN (
+    SELECT
+        order_id,
+        SUM(amount) AS total_paid,
+        MAX(status) AS latest_payment_status
+    FROM Payment
+    GROUP BY order_id
+) payments
+    ON o.order_id = payments.order_id
+GROUP BY
+    o.order_id,
+    c.name,
+    o.total_amount,
+    payments.total_paid,
+    payments.latest_payment_status
 ORDER BY o.order_id;
-```
-
-## Join Types Covered
-
-| Join | Purpose |
-|---|---|
-| INNER JOIN | Returns matching records from related tables |
-| LEFT JOIN | Returns all records from the left table and matching records from the right table |
-| RIGHT JOIN | Returns all records from the right table and matching records from the left table |
-
-## Tables Used
-
-- Customer
-- Orders
-- Order_Details
-- Product
-- Payment
-
-## Requirements Covered
-
-| Requirement | Implementation |
-|---|---|
-| Combine Customer, Product, Order and Payment tables | Multi-table INNER JOIN reports |
-| INNER JOIN | Complete order details |
-| LEFT JOIN | All customers and their purchases |
-| RIGHT JOIN | All products and their order information |
-| Complete order details | Customer + order + product + payment report |
-| Customer purchase history | Detailed purchase history query |
-| Multi-table reports | Customer summary, payment report and order-level report |
-## Execution
-
-Run Tasks I–V first so that the Customer, Product, Orders, Order_Details and Payment tables exist before executing Task VIII.
